@@ -1,7 +1,13 @@
 var http = require('http');
 var bl = require('bl');
 
-var getData = function(url) {
+var getData = function(index) {
+  var url = process.argv[index];
+
+  // synchronous call that stops the recursion
+  if(!url)
+    return;
+
   return new Promise(function(resolve, reject){
     http.get(url, function(response){
       response.pipe(bl(function(error, data) {
@@ -12,15 +18,11 @@ var getData = function(url) {
       }));
       response.on('error', reject);
     });
+  }).then(function(data) {
+    console.log(data);
+
+    getData(++index);
   });
 }
 
-getData(process.argv[2]).then(function(data) {
-  console.log(process.argv);
-  console.log(data);
-  return getData(process.argv[3]);
-}).then(function(data) {
-  console.log(data);
-  return getData(process.argv[4]);
-}).then(console.log
-).catch(console.error);
+getData(2);
